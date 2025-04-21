@@ -1,0 +1,89 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id String @id
+  name String 
+  quantity Int 
+  price Int 
+  description String
+  currentOwner String
+  ownershipHistory String[]
+  locationHistory String[]
+  latitude String
+  longitude String
+  createdAt DateTime @default(now())
+  isActive Boolean @default(true)
+  manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  manufacturerId String?
+
+  distributer    Distributer?  @relation(fields: [distributerId], references: [id])
+  distributerId  String?
+
+  retailer    Retailer?  @relation(fields: [retailerId], references: [id])
+  retailerId  String?
+}
+
+model Manufacturer {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  phoneNumber String?
+  password String
+  walletAddress String
+  profilePicture String?
+  bio String?
+  companyName String?
+  role String @default("Manufacturer")
+  isVerified Boolean @default(false)
+  longitude String @default("")
+  latitude String @default("")
+  ownedProducts Product[] 
+  createdAt DateTime @default(now())
+  isActive Boolean @default(true)
+}
+
+model Distributer {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  phoneNumber String?
+  password String
+  walletAddress String
+  profilePicture String?
+  bio String?
+  companyName String?
+  role String @default("Distributer")
+  isVerified Boolean @default(false)
+  longitude String @default("")
+  latitude String @default("")
+  ownedProducts Product[] 
+  createdAt DateTime @default(now())
+  isActive Boolean @default(true)
+}
+
+model Retailer {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  phoneNumber String?
+  password String
+  walletAddress String
+  profilePicture String?
+  bio String?
+  companyName String?
+  role String @default("Distributer")
+  isVerified Boolean @default(false)
+  longitude String @default("")
+  latitude String @default("")
+  ownedProducts Product[] 
+  createdAt DateTime @default(now())
+  isActive Boolean @default(true)
+}
