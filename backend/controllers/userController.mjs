@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import pkg from "@prisma/client";
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
 const { PrismaClient } = pkg;
 const prisma = new PrismaClient();
 
@@ -249,6 +251,201 @@ const retailerLogin = async (req, res) => {
   }
 };
 
+const manufacturerUpdateProfile = async (req, res) => {
+  const {
+    id,
+    phoneNumber,
+    walletAddress,
+    bio,
+    companyName,
+    longitude,
+    latitude,
+  } = req.body;
+
+  try {
+    let imageUrl;
+
+    if (req.file) {
+      const streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "image" },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+      };
+
+      const uploadResult = await streamUpload(req);
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const response = await prisma.manufacturer.update({
+      where: { id },
+      data: {
+        phoneNumber,
+        walletAddress,
+        bio,
+        companyName,
+        longitude,
+        latitude,
+        ...(imageUrl && { profilePicture: imageUrl }),
+      },
+    });
+
+    console.log("Updated manufacturer:", JSON.stringify(response, null, 2));
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Error updating manufacturer profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+const distributerUpdateProfile = async (req, res) => {
+  const {
+    id,
+    phoneNumber,
+    walletAddress,
+    bio,
+    companyName,
+    longitude,
+    latitude,
+  } = req.body;
+
+  try {
+    let imageUrl;
+
+    if (req.file) {
+      const streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "image" },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+      };
+
+      const uploadResult = await streamUpload(req);
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const response = await prisma.distributer.update({
+      where: { id },
+      data: {
+        phoneNumber,
+        walletAddress,
+        bio,
+        companyName,
+        longitude,
+        latitude,
+        ...(imageUrl && { profilePicture: imageUrl }),
+      },
+    });
+
+    console.log("Updated distributer:", JSON.stringify(response, null, 2));
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Error updating distributer profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+const retailerUpdateProfile = async (req, res) => {
+  const {
+    id,
+    phoneNumber,
+    walletAddress,
+    bio,
+    companyName,
+    longitude,
+    latitude,
+  } = req.body;
+
+  try {
+    let imageUrl;
+
+    if (req.file) {
+      const streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "image" },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+      };
+
+      const uploadResult = await streamUpload(req);
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const response = await prisma.retailer.update({
+      where: { id },
+      data: {
+        phoneNumber,
+        walletAddress,
+        bio,
+        companyName,
+        longitude,
+        latitude,
+        ...(imageUrl && { profilePicture: imageUrl }),
+      },
+    });
+
+    console.log("Updated retailer:", JSON.stringify(response, null, 2));
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Error updating retailer profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
 export {
   manufacturerRegister,
   distributerRegister,
@@ -256,4 +453,7 @@ export {
   manufacturerLogin,
   distributerLogin,
   retailerLogin,
+  manufacturerUpdateProfile,
+  distributerUpdateProfile,
+  retailerUpdateProfile,
 };
