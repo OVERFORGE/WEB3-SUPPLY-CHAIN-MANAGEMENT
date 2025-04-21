@@ -29,12 +29,6 @@ export const addProduct = async (req, res) => {
     console.log(wallet.address);
     await contract.assignManufacturer(wallet.address);
 
-    const hasRole = await contract.hasRole(
-      await contract.MANUFACTURER_ROLE(),
-      wallet.address
-    );
-    console.log("Is Manufacturer:", hasRole);
-
     const tx = await contract.createProduct(name, quantity, price, ipfsHash);
 
     const receipt = await tx.wait();
