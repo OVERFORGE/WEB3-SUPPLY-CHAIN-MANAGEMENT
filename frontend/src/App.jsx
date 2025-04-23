@@ -1,35 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import { useAccount, useConnect, useConnectors, useDisconnect } from "wagmi";
+import axios from "axios";
+
+const isUser = async (address) => {
+  console.log("Call reached here");
+  console.log(backendUrl);
+  if (address) {
+    console.log(address);
+    const walletAddress = address;
+    const res = await axios.post(backendUrl + "/api/v1/users/is-user", {
+      walletAddress,
+    });
+    console.log("Call reached here 2");
+    console.log(res.data);
+    if (res.data.success) {
+      return true;
+    }
+  }
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <ConnectWallet />
     </>
-  )
+  );
 }
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-export default App
+const ConnectWallet = () => {
+  const { address } = useAccount();
+  const connectors = useConnectors();
+  const { disconnect } = useDisconnect();
+  const { connect } = useConnect();
+  if (address) {
+    const userCheck = isUser(address);
+    console.log(userCheck);
+    if (userCheck) {
+      return (
+        <div>
+          Wallet Connected Successfully and User is logged in <br />{" "}
+          <div>
+            Connected to {address} <br />
+            <button
+              onClick={() => {
+                disconnect();
+              }}
+            >
+              Disconnect
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+  return (
+    <div>
+      {connectors.map((connector) => (
+        <button onClick={() => connect({ connector: connector })}>
+          Connect Via {connector.name}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+export default App;

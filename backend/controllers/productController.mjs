@@ -14,8 +14,20 @@ export const addProduct = async (req, res) => {
       location,
       latitude,
       longitude,
+      manufacturerId,
     } = req.body;
     const image = req.file;
+
+    const manufacturer = await prisma.manufacturer.findUnique({
+      where: {
+        id: manufacturerId,
+      },
+    });
+    if (!manufacturer.isVerified) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Manufacturer not verified" });
+    }
 
     const ipfsHash = await uploadMetadataToIPFS({
       name,
@@ -25,9 +37,6 @@ export const addProduct = async (req, res) => {
       latitude,
       longitude,
     });
-
-    console.log(wallet.address);
-    await contract.assignManufacturer(wallet.address);
 
     const tx = await contract.createProduct(name, quantity, price, ipfsHash);
 
@@ -61,6 +70,7 @@ export const addProduct = async (req, res) => {
           locationHistory: product.locationHistory,
           latitude: latitude,
           longitude: longitude,
+          manufacturerId: manufacturerId,
         },
       });
       console.log(prismaResponse);
@@ -94,4 +104,79 @@ export const getProduct = async (req, res) => {
     console.error("Error fetching product:", error);
     res.status(500).json({ error: "Could not fetch product" });
   }
+};
+
+export const transferProduct = async (req, res) => {
+  const {
+    productId,
+    currentOwnerId,
+    currentOwnerWalletAddress,
+    newOwnerId,
+    newOwnerWalletAddress,
+    location,
+    latitude,
+    longitude,
+  } = req.body;
+  try {
+    let currentOwner;
+    let newOwner;
+    const isOwnerManufacturer = await prisma.manufacturer.findUnique({
+      where: {
+        walletAddress: currentOwnerWalletAddress,
+      },
+    });
+    const isOwnerDistributer = await prisma.distributer.findUnique({
+      where: {
+        walletAddress: currentOwnerWalletAddress,
+      },
+    });
+    const isOwnerRetailer = await prisma.retailer.findUnique({
+      where: {
+        walletAddress: currentOwnerWalletAddress,
+      },
+    });
+    if (isOwnerManufacturer) {
+      currentOwner = isOwnerManufacturer.id;
+    } else if (isOwnerDistributer) {
+      currentOwner = isOwnerDistributer.id;
+    } else if (isOwnerRetailer) {
+      currentOwner = isOwnerRetailer.id;
+    }
+    const isNewOwnerManufacturer = await prisma.manufacturer.findUnique({
+      where: {
+        walletAddress: newOwnerWalletAddress,
+      },
+    });
+    const isNewOwnerDistributer = await prisma.distributer.findUnique({
+      where: {
+        walletAddress: newOwnerWalletAddress,
+      },
+    });
+    const isNewOwnerRetailer = await prisma.retailer.findUnique({
+      where: {
+        walletAddress: newOwnerWalletAddress,
+      },
+    });
+    if (isNewOwnerManufacturer) {
+      newOwner = isNewOwnerManufacturer.id;
+    } else if (isNewOwnerDistributer) {
+      newOwner = isNewOwnerDistributer.id;
+    } else if (isNewOwnerRetailer) {
+      newOwner = isNewOwnerRetailer.id;
+    }
+    if (
+      (isOwnerRetailer && isNewOwnerDistributer) ||
+      (isOwnerDistributer && isNewOwnerManufacturer) ||
+      (isOwnerManufacturer && isNewOwnerRetailer) ||
+      (isOwnerRetailer && isNewOwnerManufacturer) ||
+      (isOwnerManufacturer && isNewOwnerManufacturer) ||
+      (isOwnerDistributer && isNewOwnerDistributer) ||
+      (isOwnerRetailer && isNewOwnerRetailer)
+    ) {
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid Transfer Type" });
+    }
+    const tx = await contract.transferProduct();
+  } catch (error) {}
 };

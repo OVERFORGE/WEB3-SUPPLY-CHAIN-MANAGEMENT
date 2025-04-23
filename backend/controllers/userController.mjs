@@ -446,6 +446,40 @@ const retailerUpdateProfile = async (req, res) => {
   }
 };
 
+const isUser = async (req, res) => {
+  const { walletAddress } = req.body;
+
+  try {
+    const isManufacturer = await prisma.manufacturer.findUnique({
+      where: { walletAddress },
+    });
+    const isDistributer = await prisma.distributer.findUnique({
+      where: { walletAddress },
+    });
+    const isRetailer = await prisma.retailer.findUnique({
+      where: { walletAddress },
+    });
+    if (isManufacturer || isDistributer || isRetailer) {
+      res.json({
+        success: true,
+        message: "User found",
+        isManufacturer: 1 && isManufacturer,
+        isDistributer: 1 && isDistributer,
+        isRetailer: 1 && isRetailer,
+      });
+    } else {
+      res.json({ success: false, message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error checking user existence:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
 export {
   manufacturerRegister,
   distributerRegister,
@@ -456,4 +490,5 @@ export {
   manufacturerUpdateProfile,
   distributerUpdateProfile,
   retailerUpdateProfile,
+  isUser,
 };

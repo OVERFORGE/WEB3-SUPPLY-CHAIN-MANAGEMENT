@@ -78,4 +78,35 @@ export async function uploadMetadataToIPFS({
   }
 }
 
+export async function transferMetadataToIPFS({
+  location,
+  latitude,
+  longitude,
+}) {
+  try {
+    const metadata = {
+      properties: {
+        location: location || "Unknown",
+        latitude: latitude ? String(latitude) : "0",
+        longitude: longitude ? String(longitude) : "0",
+      },
+    };
+    const metadataBlob = new Blob([JSON.stringify(metadata)], {
+      type: "application/json",
+    });
+    const metadataFile = new File([metadataBlob], "metadata.json", {
+      type: "application/json",
+    });
+
+    const metadataUploadRes = await pinata.upload.public.file(metadataFile);
+    const metadataCID = metadataUploadRes.cid;
+
+    console.log("Metadata uploaded to IPFS:", `ipfs://${metadataCID}`);
+    return metadataCID;
+  } catch (error) {
+    console.error("❌ Error uploading metadata to IPFS:", error.message);
+    throw new Error("Failed to upload metadata");
+  }
+}
+
 export { upload };

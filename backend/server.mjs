@@ -4,12 +4,13 @@ import productRouter from "./routes/productRoutes.mjs";
 import userRouter from "./routes/UserRoute.mjs";
 import adminRouter from "./routes/admin/adminRoute.mjs";
 import connectCloudinary from "./config/cloudinary.mjs";
+import cors from "cors";
 dotenv.config();
 
 const app = express();
 connectCloudinary();
 app.use(express.json());
-
+app.use(cors());
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/admin", adminRouter);

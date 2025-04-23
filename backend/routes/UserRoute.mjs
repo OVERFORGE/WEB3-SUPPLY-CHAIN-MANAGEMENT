@@ -3,6 +3,7 @@ import {
   distributerLogin,
   distributerRegister,
   distributerUpdateProfile,
+  isUser,
   manufacturerLogin,
   manufacturerRegister,
   manufacturerUpdateProfile,
@@ -35,5 +36,6 @@ userRouter.post("/retailer-registration", retailerRegister);
 userRouter.post("/manufacturer-login", manufacturerLogin);
 userRouter.post("/distributer-login", distributerLogin);
 userRouter.post("/retailer-login", retailerLogin);
+userRouter.post("/is-user", isUser);
 
 export default userRouter;

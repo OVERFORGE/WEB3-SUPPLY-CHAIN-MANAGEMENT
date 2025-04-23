@@ -37,7 +37,7 @@ model Manufacturer {
   email String @unique
   phoneNumber String?
   password String
-  walletAddress String
+  walletAddress String @unique
   profilePicture String?
   bio String?
   companyName String?
@@ -56,7 +56,7 @@ model Distributer {
   email String @unique
   phoneNumber String?
   password String
-  walletAddress String
+  walletAddress String @unique
   profilePicture String?
   bio String?
   companyName String?
@@ -75,7 +75,7 @@ model Retailer {
   email String @unique
   phoneNumber String?
   password String
-  walletAddress String
+  walletAddress String @unique
   profilePicture String?
   bio String?
   companyName String?
@@ -86,4 +86,15 @@ model Retailer {
   ownedProducts Product[] 
   createdAt DateTime @default(now())
   isActive Boolean @default(true)
+}
+
+model transferLogs{
+  id String @id @default(uuid())
+  txhash String[]
+  manufacturerId String
+  distributorId String
+  retailerId String
+  productId String
+  quantity Int?
+  createdAt DateTime @default(now())
 }
